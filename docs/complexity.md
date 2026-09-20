@@ -28,19 +28,19 @@ This rule is used in both the naive and efficient implementations so the results
 
 ### Experimental comparison
 
-1. The efficient implementation is usually faster for large inputs.
-2. As input size increases, the brute-force approach grows quadratically.
-3. The measured timing should agree with the theoretical prediction.
-4. The gap becomes larger because O(n^2) grows much faster than O(n).
-5. The faster method uses extra memory for the hash table.
+1. Brute force took 1.998 ms at n = 1,000, 205.945 ms at n = 10,000, and 20,471.684 ms at n = 100,000. Each 10x increase in n multiplied the time by about 100x, which matches O(n^2).
+2. The hash set took 0.19 ms, 1.868 ms, and 18.138 ms. Each 10x increase in n multiplied the time by about 10x, which matches O(n).
+3. At n = 100,000 the hash set was about 1,100x faster.
+4. The hash set is faster but needs O(n) extra memory for the table, while brute force needs O(1).
+5. The 1,000,000 size was not run (see the README).
 
 ```mermaid
 xychart-beta
     title Problem 1: Input Size vs Execution Time
-    x-axis [1000, 10000, 100000, 1000000]
-    y-axis "Time (ms)" 0 --> 5000
-    line [0.5, 45, 2500, 5000] "Brute Force"
-    line [0.1, 1, 10, 50] "Hash Set"
+    x-axis [1000, 10000, 100000]
+    y-axis "Time (ms)" 0 --> 21000
+    line [1.998, 205.945, 20471.684] "Brute Force"
+    line [0.19, 1.868, 18.138] "Hash Set"
 ```
 
 ## Problem 2 — Most frequent value
@@ -61,20 +61,21 @@ xychart-beta
 
 ### Experimental comparison
 
-1. The hash-based solution is expected to win for large arrays.
-2. The gap becomes much more obvious as n grows.
-3. The empirical results should trend toward the theoretical expectations.
-4. The brute-force approach has a larger work count because it rescans the entire array for each candidate value.
-5. The faster algorithm uses more memory to store the frequency table.
+1. Naive counting took 3.553 ms at n = 1,000, 352.528 ms at n = 10,000, and 34,563.265 ms at n = 100,000. Each 10x increase in n multiplied the time by about 100x, which matches O(n^2).
+2. The hash counts took 0.069 ms, 0.644 ms, and 6.04 ms, about 10x per step, which matches O(n).
+3. At n = 100,000 the hash version was about 5,700x faster.
+4. The hash version needs O(n) extra memory for the frequency table.
+5. The 1,000,000 size was not run (see the README).
 
 ```mermaid
 xychart-beta
     title Problem 2: Input Size vs Execution Time
-    x-axis [1000, 10000, 100000, 1000000]
-    y-axis "Time (ms)" 0 --> 5000
-    line [0.8, 70, 4200, 5000] "Naive Count"
-    line [0.1, 1, 12, 60] "Hash Counts"
+    x-axis [1000, 10000, 100000]
+    y-axis "Time (ms)" 0 --> 35000
+    line [3.553, 352.528, 34563.265] "Naive Count"
+    line [0.069, 0.644, 6.04] "Hash Counts"
 ```
+
 
 ## Problem 3 — Common elements between two arrays
 
@@ -95,20 +96,23 @@ xychart-beta
 ### Experimental comparison
 
 1. The hash-based solution is faster for large inputs.
-2. The difference grows with the size of both arrays.
-3. The observed data should align with the expected O(n + m) versus O(n × m) behavior.
-4. The gap widens because the naive approach repeats the same work many times.
-5. The faster method trades extra memory for speed.
+1. The naive scan took 0.173 ms at n = 1,000, 1.697 ms at n = 10,000, and 16.957 ms at n = 100,000. That is about 10x per step, which looks linear (O(n)), not the O(n x m) the theory predicts for the worst case.
+2. The hash lookup took 0.129 ms, 1.179 ms, and 11.626 ms, also about 10x per step, which matches O(n + m). At n = 100,000 it was only about 1.5x faster than the naive scan.
+3. The reason is the benchmark input. Both arrays contain only the values 0 to 18, so every scan of the second array finds its match within about 19 elements and stops, and the list of distinct common values never grows past 19 entries. The naive cost is roughly n x 19, which is O(n).
+4. The quadratic behavior only appears when many values are missing from the second array or sit deep inside it, for example two mostly non-overlapping ranges, where each lookup has to scan the entire array.
+5. The hash version needs O(m) extra memory for the set built from the second array.
 
 ```mermaid
 xychart-beta
     title Problem 3: Input Size vs Execution Time
-    x-axis [1000, 10000, 100000, 1000000]
-    y-axis "Time (ms)" 0 --> 5000
-    line [1.0, 90, 5000, 5000] "Naive Scan"
-    line [0.1, 2, 14, 100] "Hash Lookup"
+    x-axis [1000, 10000, 100000]
+    y-axis "Time (ms)" 0 --> 18
+    line [0.173, 1.697, 16.957] "Naive Scan"
+    line [0.129, 1.179, 11.626] "Hash Lookup"
 ```
+
+
 
 ## Observations
 
-The efficient versions are empirically faster because they reduce repeated work. The naive versions do the same comparisons again and again, which scales poorly as input size increases. The faster algorithm usually uses extra memory, which is the standard tradeoff in algorithm design.
+For Problems 1 and 2, the measured times match the theory: the naive versions grew about 100x for every 10x increase in n, while the hash-based versions grew about 10x. At n = 100,000 the hash versions were roughly 1,100x and 5,700x faster. For Problem 3 the provided inputs only contain values 0-18, so the naive scan exits early and behaves like O(n), which hides the expected quadratic gap. The hash-based versions use extra memory (O(n) or O(m)) in exchange for the speedup.

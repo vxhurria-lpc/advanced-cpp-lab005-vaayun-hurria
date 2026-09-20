@@ -178,3 +178,44 @@ make benchmark
 ```
 
 The goal is to understand performance, not to create complex problem statements. The assignment is intentionally simple so that students focus on observing the practical effects of algorithmic complexity.
+
+
+## My Results
+
+## Build and test
+```bash
+make test
+```
+
+## Run the benchmark
+```bash
+make build/benchmark_app
+./build/benchmark_app 100000 5 > results.csv
+```
+
+## Setup
+- Machine: MacBook Pro
+- Compiler: Apple clang version 17.0.0 (clang-1700.4.4.1)
+Target: arm64-apple-darwin25.6.0
+Thread model: posix
+InstalledDir: /Library/Developer/CommandLineTools/usr/bin
+- Flags: -std=c++17 -Wall -Wextra -pedantic (no -O flag, so unoptimized)
+- 5 trials per input size; the median is reported
+
+## Max input size
+I tested 1,000, 10,000, and 100,000. I did not run 1,000,000 because the O(n^2) solutions were already slow at 100,000 (about 20 s per trial for duplicate and 35 s for frequency). Multiplying by 100 gives roughly 34 and 58 minutes per trial at 1,000,000.
+
+## Results (median, ms)
+| Problem | Algorithm | 1,000 | 10,000 | 100,000 |
+|---|---|---|---|---|
+| duplicate | naive | 1.998 | 205.945 | 20471.684 |
+| duplicate | efficient | 0.19 | 1.868 | 18.138 |
+| frequency | naive | 3.553 | 352.528 | 34563.265 |
+| frequency | efficient | 0.069 | 0.644 | 6.04 |
+| common | naive | 0.173 | 1.697 | 16.957 |
+| common | efficient | 0.129 | 1.179 | 11.626 |
+
+## Notes
+- Both implementations of every problem were checked against each other in the test suite before benchmarking.
+- The `common` results do not show quadratic growth for the naive version because the provided benchmark inputs only contain values 0-18. See `docs/complexity.md`.
+- Full analysis: `docs/complexity.md`
